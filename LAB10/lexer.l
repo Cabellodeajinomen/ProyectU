@@ -7,171 +7,160 @@
 
 int line_num = 1;
 
-/* strdup simple para portabilidad */
 static char *my_strdup(const char *s) {
-	if (!s) return NULL;
-	size_t n = strlen(s) + 1;
-	char *p = (char*)malloc(n);
-	if (p) memcpy(p, s, n);
-	return p;
+    if (!s) return NULL;
+    size_t n = strlen(s) + 1;
+    char *p = (char*)malloc(n);
+    if (p) memcpy(p, s, n);
+    return p;
 }
 
-/* Desescapa una cadena entre comillas dobles estilo C. La entrada incluye las comillas.
-	Devuelve una cadena recién asignada sin las comillas y con las secuencias escapadas procesadas. */
 static char *unescape_string(const char *s) {
-	size_t len = strlen(s);
-	if (len < 2) return my_strdup("");
-	/* saltar la comilla inicial y final si están presentes */
-	const char *p = s;
-	if (*p == '"') p++;
-	const char *end = s + len - 1;
-	if (*end == '"') {
-		/* tratamos la comilla final como terminador */
-		;
-	} else {
-		end = s + len; /* sin comilla final: procesar hasta el final */
-	}
-
-	/* asignar búfer no mayor que el original */
-	char *out = (char*)malloc(len + 1);
-	char *o = out;
-	while (p < end && *p) {
-		if (*p == '\\' && (p+1) < end) {
-			p++;
-			switch (*p) {
-				case 'n': *o++ = '\n'; break;
-				case 't': *o++ = '\t'; break;
-				case 'r': *o++ = '\r'; break;
-				case '\\': *o++ = '\\'; break;
-				case '\"': *o++ = '\"'; break;
-				case '\'': *o++ = '\''; break;
-				case '0': *o++ = '\0'; break;
-				case 'x': {
-					/* escape hexadecimal: \xHH */
-					p++;
-					int val = 0; int digits = 0;
-					while (p < end && isxdigit((unsigned char)*p) && digits < 2) {
-						char c = *p;
-						val = val * 16 + (c >= '0' && c <= '9' ? c - '0' : (tolower(c) - 'a' + 10));
-						digits++; p++;
-					}
-					p--; /* adjust because loop advances one too far */
-					*o++ = (char)val;
-					break;
-				}
-				default:
-					/* escape desconocido, mantener el carácter literal */
-					*o++ = *p; break;
-			}
-			p++;
-		} else {
-			*o++ = *p++;
-		}
-	}
-	*o = '\0';
-	return out;
+    size_t len = strlen(s);
+    if (len < 2) return my_strdup("");
+    
+    const char *p = s + 1; // Saltar comilla inicial
+    const char *end = s + len - 1; // Antes de comilla final
+    
+    char *out = (char*)malloc(len + 1);
+    char *o = out;
+    
+    while (p < end && *p) {
+        if (*p == '\\' && (p+1) < end) {
+            p++;
+            switch (*p) {
+                case 'n': *o++ = '\n'; break;
+                case 't': *o++ = '\t'; break;
+                case 'r': *o++ = '\r'; break;
+                case '\\': *o++ = '\\'; break;
+                case '\"': *o++ = '\"'; break;
+                default: *o++ = *p; break;
+            }
+            p++;
+        } else {
+            *o++ = *p++;
+        }
+    }
+    *o = '\0';
+    return out;
 }
 
-/* Ayudante para imprimir el nombre del tipo de token */
 static const char *token_name(TokenType t) {
-	switch (t) {
-		case T_ID: return "ID"; case T_NUM: return "NUM"; case T_STRING: return "STRING";
-		case T_IF: return "IF"; case T_ELSE: return "ELSE"; case T_WHILE: return "WHILE"; case T_RETURN: return "RETURN";
-		case T_INT: return "INT"; case T_FLOAT: return "FLOAT"; case T_CHAR: return "CHAR"; case T_VOID: return "VOID";
-		case T_OP_SUM: return "SUM"; case T_OP_RES: return "RES"; case T_OP_MUL: return "MUL"; case T_OP_DIV: return "DIV";
-		case T_ASSIGN: return "ASSIGN"; case T_EQ: return "EQ"; case T_NEQ: return "NEQ"; case T_LT: return "LT"; case T_GT: return "GT"; case T_LE: return "LE"; case T_GE: return "GE";
-		case T_LPAREN: return "LPAREN"; case T_RPAREN: return "RPAREN"; case T_LBRACE: return "LBRACE"; case T_RBRACE: return "RBRACE"; case T_SEMICOLON: return "SEMICOLON"; case T_COMMA: return "COMMA";
-		case T_ERROR: return "ERROR";
-		default: return "UNKNOWN";
-	}
+    switch (t) {
+        case T_PROGRAMA: return "PROGRAMA";
+        case T_VAR: return "VAR";
+        case T_INT: return "INT";
+        case T_INICIO: return "INICIO";
+        case T_FIN: return "FIN";
+        case T_SI: return "SI";
+        case T_ENTONCES: return "ENTONCES";
+        case T_SINO: return "SINO";
+        case T_FSI: return "FSI";
+        case T_MIENTRAS: return "MIENTRAS";
+        case T_HACER: return "HACER";
+        case T_FMIENTRAS: return "FMIENTRAS";
+        case T_ESCRIBIR: return "ESCRIBIR";
+        case T_ID: return "ID";
+        case T_ENTERO: return "ENTERO";
+        case T_CADENA: return "CADENA";
+        case T_ASIGNACION: return "ASIGNACION";
+        case T_SUMA: return "SUMA";
+        case T_RESTA: return "RESTA";
+        case T_MULTIPLICACION: return "MULTIPLICACION";
+        case T_DIVISION: return "DIVISION";
+        case T_MAYOR: return "MAYOR";
+        case T_MENOR: return "MENOR";
+        case T_MAYOR_IGUAL: return "MAYOR_IGUAL";
+        case T_MENOR_IGUAL: return "MENOR_IGUAL";
+        case T_IGUAL: return "IGUAL";
+        case T_DIFERENTE: return "DIFERENTE";
+        case T_PARENTESIS_IZQ: return "PARENTESIS_IZQ";
+        case T_PARENTESIS_DER: return "PARENTESIS_DER";
+        case T_PUNTO_COMA: return "PUNTO_COMA";
+        case T_COMA: return "COMA";
+        case T_DOS_PUNTOS: return "DOS_PUNTOS";
+        case T_ERROR: return "ERROR";
+        case T_EOF: return "EOF";
+        default: return "UNKNOWN";
+    }
 }
 
-/* Imprime un token en un formato legible */
 static void print_token(const Token *t) {
-	if (!t) return;
-	printf("Token: %-10s Lexema: %s Linea: %d", token_name(t->type), t->lexeme ? t->lexeme : "(null)", t->line);
-	if (t->vtype == VT_INT) {
-		printf(" Value(dec): %lld Value(hex): 0x%llx", t->intValue, (unsigned long long)t->intValue);
-	} else if (t->vtype == VT_STRING) {
-		printf(" Value(str): \"%s\"", t->strValue ? t->strValue : "");
-	}
-	printf("\n");
+    if (!t) return;
+    printf("[%s, \"%s\"] Linea: %d", token_name(t->type), 
+           t->lexeme ? t->lexeme : "", t->line);
+    
+    if (t->vtype == VT_INT) {
+        printf(" (valor: %lld)", t->intValue);
+    } else if (t->vtype == VT_STRING && t->strValue) {
+        printf(" (texto: %s)", t->strValue);
+    }
+    printf("\n");
 }
+/* Evita crear un archivo yywrap.c: función trivial para indicar EOF al scanner. */
+int yywrap(void) { return 1; }
 %}
 
 %%
-[ \t\r]+                 ; // Ignorar espacios y tabulaciones
+
+[ \t\r]+                 ; // Ignorar espacios
 \n                       { line_num++; }
 
+"programa"               { Token t = {T_PROGRAMA, my_strdup(yytext), VT_NONE, 0, NULL, line_num}; print_token(&t); free(t.lexeme); }
+"var"                    { Token t = {T_VAR, my_strdup(yytext), VT_NONE, 0, NULL, line_num}; print_token(&t); free(t.lexeme); }
+"int"                    { Token t = {T_INT, my_strdup(yytext), VT_NONE, 0, NULL, line_num}; print_token(&t); free(t.lexeme); }
+"inicio"                 { Token t = {T_INICIO, my_strdup(yytext), VT_NONE, 0, NULL, line_num}; print_token(&t); free(t.lexeme); }
+"fin"                    { Token t = {T_FIN, my_strdup(yytext), VT_NONE, 0, NULL, line_num}; print_token(&t); free(t.lexeme); }
+"si"                     { Token t = {T_SI, my_strdup(yytext), VT_NONE, 0, NULL, line_num}; print_token(&t); free(t.lexeme); }
+"entonces"               { Token t = {T_ENTONCES, my_strdup(yytext), VT_NONE, 0, NULL, line_num}; print_token(&t); free(t.lexeme); }
+"sino"                   { Token t = {T_SINO, my_strdup(yytext), VT_NONE, 0, NULL, line_num}; print_token(&t); free(t.lexeme); }
+"fsi"                    { Token t = {T_FSI, my_strdup(yytext), VT_NONE, 0, NULL, line_num}; print_token(&t); free(t.lexeme); }
+"mientras"               { Token t = {T_MIENTRAS, my_strdup(yytext), VT_NONE, 0, NULL, line_num}; print_token(&t); free(t.lexeme); }
+"hacer"                  { Token t = {T_HACER, my_strdup(yytext), VT_NONE, 0, NULL, line_num}; print_token(&t); free(t.lexeme); }
+"fmientras"              { Token t = {T_FMIENTRAS, my_strdup(yytext), VT_NONE, 0, NULL, line_num}; print_token(&t); free(t.lexeme); }
+"escribir"               { Token t = {T_ESCRIBIR, my_strdup(yytext), VT_NONE, 0, NULL, line_num}; print_token(&t); free(t.lexeme); }
 
-"if"                     {
-	Token t = { .type = T_IF, .lexeme = my_strdup(yytext), .vtype = VT_NONE, .intValue = 0, .strValue = NULL, .line = line_num };
-	print_token(&t);
-	free(t.lexeme);
-}
-"else"                   {
-	Token t = { .type = T_ELSE, .lexeme = my_strdup(yytext), .vtype = VT_NONE, .intValue = 0, .strValue = NULL, .line = line_num };
-	print_token(&t); free(t.lexeme);
-}
-"while"                  {
-	Token t = { .type = T_WHILE, .lexeme = my_strdup(yytext), .vtype = VT_NONE, .intValue = 0, .strValue = NULL, .line = line_num };
-	print_token(&t); free(t.lexeme);
-}
-"return"                 {
-	Token t = { .type = T_RETURN, .lexeme = my_strdup(yytext), .vtype = VT_NONE, .intValue = 0, .strValue = NULL, .line = line_num };
-	print_token(&t); free(t.lexeme);
-}
-"int"                    { Token t = { .type = T_INT, .lexeme = my_strdup(yytext), .vtype = VT_NONE, .line = line_num }; print_token(&t); free(t.lexeme); }
-"float"                  { Token t = { .type = T_FLOAT, .lexeme = my_strdup(yytext), .vtype = VT_NONE, .line = line_num }; print_token(&t); free(t.lexeme); }
-"char"                   { Token t = { .type = T_CHAR, .lexeme = my_strdup(yytext), .vtype = VT_NONE, .line = line_num }; print_token(&t); free(t.lexeme); }
-"void"                   { Token t = { .type = T_VOID, .lexeme = my_strdup(yytext), .vtype = VT_NONE, .line = line_num }; print_token(&t); free(t.lexeme); }
+":="                     { Token t = {T_ASIGNACION, my_strdup(yytext), VT_NONE, 0, NULL, line_num}; print_token(&t); free(t.lexeme); }
+"+"                      { Token t = {T_SUMA, my_strdup(yytext), VT_NONE, 0, NULL, line_num}; print_token(&t); free(t.lexeme); }
+"-"                      { Token t = {T_RESTA, my_strdup(yytext), VT_NONE, 0, NULL, line_num}; print_token(&t); free(t.lexeme); }
+"*"                      { Token t = {T_MULTIPLICACION, my_strdup(yytext), VT_NONE, 0, NULL, line_num}; print_token(&t); free(t.lexeme); }
+"/"                      { Token t = {T_DIVISION, my_strdup(yytext), VT_NONE, 0, NULL, line_num}; print_token(&t); free(t.lexeme); }
+">"                      { Token t = {T_MAYOR, my_strdup(yytext), VT_NONE, 0, NULL, line_num}; print_token(&t); free(t.lexeme); }
+"<"                      { Token t = {T_MENOR, my_strdup(yytext), VT_NONE, 0, NULL, line_num}; print_token(&t); free(t.lexeme); }
+">="                     { Token t = {T_MAYOR_IGUAL, my_strdup(yytext), VT_NONE, 0, NULL, line_num}; print_token(&t); free(t.lexeme); }
+"<="                     { Token t = {T_MENOR_IGUAL, my_strdup(yytext), VT_NONE, 0, NULL, line_num}; print_token(&t); free(t.lexeme); }
+"=="                     { Token t = {T_IGUAL, my_strdup(yytext), VT_NONE, 0, NULL, line_num}; print_token(&t); free(t.lexeme); }
+"!="                     { Token t = {T_DIFERENTE, my_strdup(yytext), VT_NONE, 0, NULL, line_num}; print_token(&t); free(t.lexeme); }
 
-[0-9]+(\.[0-9]+)?        {
-	/* número entero o decimal (guardamos la parte entera). Usar base 0 para permitir 0x hexadecimal si está presente */
-	Token t;
-	t.type = T_NUM;
-	t.lexeme = my_strdup(yytext);
-	t.line = line_num;
-	t.vtype = VT_INT;
-	/* analiza el valor numérico con base 0 para que "0x..." funcione también */
-	t.intValue = strtoll(yytext, NULL, 0);
-	t.strValue = NULL;
-	print_token(&t);
-	free(t.lexeme);
+"("                      { Token t = {T_PARENTESIS_IZQ, my_strdup(yytext), VT_NONE, 0, NULL, line_num}; print_token(&t); free(t.lexeme); }
+")"                      { Token t = {T_PARENTESIS_DER, my_strdup(yytext), VT_NONE, 0, NULL, line_num}; print_token(&t); free(t.lexeme); }
+";"                      { Token t = {T_PUNTO_COMA, my_strdup(yytext), VT_NONE, 0, NULL, line_num}; print_token(&t); free(t.lexeme); }
+","                      { Token t = {T_COMA, my_strdup(yytext), VT_NONE, 0, NULL, line_num}; print_token(&t); free(t.lexeme); }
+":"                      { Token t = {T_DOS_PUNTOS, my_strdup(yytext), VT_NONE, 0, NULL, line_num}; print_token(&t); free(t.lexeme); }
+
+[0-9]+                   { 
+    Token t = {T_ENTERO, my_strdup(yytext), VT_INT, strtoll(yytext, NULL, 10), NULL, line_num};
+    print_token(&t);
+    free(t.lexeme);
 }
-0[xX][0-9a-fA-F]+        {
-	Token t; t.type = T_NUM; t.lexeme = my_strdup(yytext); t.line = line_num; t.vtype = VT_INT; t.intValue = strtoll(yytext, NULL, 0); t.strValue = NULL; print_token(&t); free(t.lexeme);
-}
+
 \"([^\"\\]|\\.)*\"       {
-	Token t; t.type = T_STRING; t.lexeme = my_strdup(yytext); t.line = line_num; t.vtype = VT_STRING; t.strValue = unescape_string(yytext); t.intValue = 0; print_token(&t); free(t.lexeme); free(t.strValue);
+    Token t = {T_CADENA, my_strdup(yytext), VT_STRING, 0, unescape_string(yytext), line_num};
+    print_token(&t);
+    free(t.lexeme);
+    free(t.strValue);
 }
 
 [a-zA-Z_][a-zA-Z0-9_]*   {
-	Token t; t.type = T_ID; t.lexeme = my_strdup(yytext); t.line = line_num; t.vtype = VT_NONE; t.intValue = 0; t.strValue = NULL; print_token(&t); free(t.lexeme);
+    Token t = {T_ID, my_strdup(yytext), VT_NONE, 0, NULL, line_num};
+    print_token(&t);
+    free(t.lexeme);
 }
 
-"=="                     { Token t = { .type = T_EQ, .lexeme = my_strdup(yytext), .vtype = VT_NONE, .line = line_num }; print_token(&t); free(t.lexeme); }
-"!="                     { Token t = { .type = T_NEQ, .lexeme = my_strdup(yytext), .vtype = VT_NONE, .line = line_num }; print_token(&t); free(t.lexeme); }
-"<="                     { Token t = { .type = T_LE, .lexeme = my_strdup(yytext), .vtype = VT_NONE, .line = line_num }; print_token(&t); free(t.lexeme); }
-">="                     { Token t = { .type = T_GE, .lexeme = my_strdup(yytext), .vtype = VT_NONE, .line = line_num }; print_token(&t); free(t.lexeme); }
-
-"="                      { Token t = { .type = T_ASSIGN, .lexeme = my_strdup(yytext), .vtype = VT_NONE, .line = line_num }; print_token(&t); free(t.lexeme); }
-"<"                      { Token t = { .type = T_LT, .lexeme = my_strdup(yytext), .vtype = VT_NONE, .line = line_num }; print_token(&t); free(t.lexeme); }
-">"                      { Token t = { .type = T_GT, .lexeme = my_strdup(yytext), .vtype = VT_NONE, .line = line_num }; print_token(&t); free(t.lexeme); }
-
-"+"                      { Token t = { .type = T_OP_SUM, .lexeme = my_strdup(yytext), .vtype = VT_NONE, .line = line_num }; print_token(&t); free(t.lexeme); }
-"-"                      { Token t = { .type = T_OP_RES, .lexeme = my_strdup(yytext), .vtype = VT_NONE, .line = line_num }; print_token(&t); free(t.lexeme); }
-"*"                      { Token t = { .type = T_OP_MUL, .lexeme = my_strdup(yytext), .vtype = VT_NONE, .line = line_num }; print_token(&t); free(t.lexeme); }
-"/"                      { Token t = { .type = T_OP_DIV, .lexeme = my_strdup(yytext), .vtype = VT_NONE, .line = line_num }; print_token(&t); free(t.lexeme); }
-
-"("                      { Token t = { .type = T_LPAREN, .lexeme = my_strdup(yytext), .vtype = VT_NONE, .line = line_num }; print_token(&t); free(t.lexeme); }
-
-")"                      { Token t = { .type = T_RPAREN, .lexeme = my_strdup(yytext), .vtype = VT_NONE, .line = line_num }; print_token(&t); free(t.lexeme); }
-"{"                      { Token t = { .type = T_LBRACE, .lexeme = my_strdup(yytext), .vtype = VT_NONE, .line = line_num }; print_token(&t); free(t.lexeme); }
-"}"                      { Token t = { .type = T_RBRACE, .lexeme = my_strdup(yytext), .vtype = VT_NONE, .line = line_num }; print_token(&t); free(t.lexeme); }
-";"                      { Token t = { .type = T_SEMICOLON, .lexeme = my_strdup(yytext), .vtype = VT_NONE, .line = line_num }; print_token(&t); free(t.lexeme); }
-","                      { Token t = { .type = T_COMMA, .lexeme = my_strdup(yytext), .vtype = VT_NONE, .line = line_num }; print_token(&t); free(t.lexeme); }
-
-.                        { Token t = { .type = T_ERROR, .lexeme = my_strdup(yytext), .vtype = VT_NONE, .line = line_num }; print_token(&t); free(t.lexeme); }
+.                        {
+    Token t = {T_ERROR, my_strdup(yytext), VT_NONE, 0, NULL, line_num};
+    print_token(&t);
+    free(t.lexeme);
+}
 
 %%

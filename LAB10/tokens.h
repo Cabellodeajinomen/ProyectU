@@ -1,21 +1,26 @@
 #ifndef TOKENS_H
 #define TOKENS_H
 
-/* Cabecera de tokens compatible con C para que el scanner generado por Flex (C)
-    y el `main.cpp` en C++ puedan compartir las mismas definiciones. */
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 typedef enum {
-    T_ID, T_NUM, T_STRING,
-    T_IF, T_ELSE, T_WHILE, T_RETURN,
-    T_INT, T_FLOAT, T_CHAR, T_VOID,
-    T_OP_SUM, T_OP_RES, T_OP_MUL, T_OP_DIV,
-    T_ASSIGN, T_EQ, T_NEQ, T_LT, T_GT, T_LE, T_GE,
-    T_LPAREN, T_RPAREN, T_LBRACE, T_RBRACE, T_SEMICOLON, T_COMMA,
-    T_ERROR
+    // Palabras reservadas de Mini-0
+    T_PROGRAMA, T_VAR, T_INT, T_INICIO, T_FIN, T_SI, T_ENTONCES, T_SINO, T_FSI, 
+    T_MIENTRAS, T_HACER, T_FMIENTRAS, T_ESCRIBIR,
+    
+    // Identificadores y literales
+    T_ID, T_ENTERO, T_CADENA,
+    
+    // Operadores y símbolos
+    T_ASIGNACION, T_SUMA, T_RESTA, T_MULTIPLICACION, T_DIVISION,
+    T_MAYOR, T_MENOR, T_MAYOR_IGUAL, T_MENOR_IGUAL, T_IGUAL, T_DIFERENTE,
+    
+    // Delimitadores
+    T_PARENTESIS_IZQ, T_PARENTESIS_DER, T_PUNTO_COMA, T_COMA, T_DOS_PUNTOS,
+    
+    T_ERROR, T_EOF
 } TokenType;
 
 typedef enum {
@@ -24,14 +29,13 @@ typedef enum {
     VT_STRING
 } ValueType;
 
-/* Estructura Token `lexeme` y `strValue` están asignadas en memoria dinámica (el llamador/lexer debe liberarlas cuando no sean necesarias). */
 typedef struct {
     TokenType type;
-    char *lexeme;      /* lexema crudo (tal como en la fuente), terminado en nulo */
-    ValueType vtype;   /* indica si se almacena un valor adicional */
-    long long intValue;/* valor numérico si vtype == VT_INT */
-    char *strValue;    /* valor de cadena desescapado si vtype == VT_STRING */
-    int line;          /* número de línea en la fuente (base 1) */
+    char *lexeme;
+    ValueType vtype;
+    long long intValue;
+    char *strValue;
+    int line;
 } Token;
 
 #ifdef __cplusplus

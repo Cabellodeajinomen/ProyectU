@@ -1,28 +1,39 @@
-// Test file for tokens
-int main() {
-    int a = 10;
-    int b = 0x0f; // hex num
-    float f = 3.14;
-    char c = '\n';
-    if (a > 5) {
-        a = a + 1;
-    } else {
-        a = 0x1F + b;
-    }
-
-    // string with escapes "\"
-    char *s | = " Hello\\nWorld\\t\"quote\"\\x41 ";
-
-    // identifiers
-    my_var1 = a;
-
-    // comparison operators
-    if (a == b) a = 0;
-    if (a != b) a = 1;
-
-    // errors: invalid char and unterminated string
-    @
-    "unterminated string
-
-    return a;
-}
+programa
+    var numero: int;
+    var x, y, resultado: int;
+inicio
+    numero := 42;
+    escribir("Hola Mundo Mini-0");
+    escribir("El número es: ", numero);
+    
+    si (numero >= 40) entonces
+        escribir("El número es mayor o igual a 40");
+    sino
+        escribir("El número es menor que 40");
+    fsi
+    x := 10;
+    y := 5;
+    
+    si (x > y) entonces
+        resultado := x + y;
+        escribir("x es mayor que y");
+    sino
+        resultado := y - x;
+        escribir("y es mayor o igual que x");
+    fsi
+    
+    escribir("El resultado es: ", resultado);
+    
+    mientras (resultado < 20) hacer
+        resultado := resultado + 1;
+        escribir("Incrementando resultado: ", resultado);
+    fmientras
+    
+    si (x == 10) entonces
+        escribir("x es igual a 10");
+    fsi
+    
+    si (x != y) entonces
+        escribir("x es diferente de y");
+    fsi
+fin

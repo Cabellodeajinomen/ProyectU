@@ -17,7 +17,7 @@ int main()
     catch (const SyntaxError& error)
     {
         // Manejo de errores: muestra número de línea y descripción
-        cerr << "Error en línea " << error.Lineno() << ": " << error.Message() << endl;
+    cerr << "Error en linea " << error.Lineno() << ": " << error.Message() << endl;
         return 1;
     }
     return 0;

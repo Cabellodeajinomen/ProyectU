@@ -3,8 +3,16 @@
 #include <iostream>
 #include "tokens.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern FILE* yyin;
 extern int yylex();
+
+#ifdef __cplusplus
+}
+#endif
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
@@ -18,7 +26,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    yylex(); // Ejecuta el analizador léxico
+    yylex();
     fclose(yyin);
     return 0;
 }
