@@ -1,0 +1,7 @@
+math {
+    int x;
+    int y;
+    x = 5;
+    y = 3;
+    x + y * 2;
+}

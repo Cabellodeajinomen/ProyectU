@@ -1,0 +1,28 @@
+// Test file for tokens
+int main() {
+    int a = 10;
+    int b = 0x0f; // hex num
+    float f = 3.14;
+    char c = '\n';
+    if (a > 5) {
+        a = a + 1;
+    } else {
+        a = 0x1F + b;
+    }
+
+    // string with escapes "\"
+    char *s | = " Hello\\nWorld\\t\"quote\"\\x41 ";
+
+    // identifiers
+    my_var1 = a;
+
+    // comparison operators
+    if (a == b) a = 0;
+    if (a != b) a = 1;
+
+    // errors: invalid char and unterminated string
+    @
+    "unterminated string
+
+    return a;
+}

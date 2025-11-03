@@ -1,0 +1,28 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build all",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "-std=c++11",
+                "-Wall",
+                "-g",
+                "traductor.cpp",
+                "parser.cpp",
+                "lexer.cpp", 
+                "symbol.cpp",
+                "error.cpp",
+                "-o",
+                "traductor.exe"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": ["$gcc"],
+            "detail": "Compilar todos los archivos del traductor"
+        }
+    ]
+}
